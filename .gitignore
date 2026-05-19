@@ -1,0 +1,50 @@
+# 忽略文件
+.env
+.env.local
+.env.*.local
+
+# 日志
+logs
+*.log
+npm-debug.log*
+
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 目录
+node_modules/
+dist/
+coverage/
+
+# 生产构建
+.bundle
+.next/
+out/
+
+# 调试
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 测试
+.nyc_output/
+test-results/
+
+# 临时文件
+tmp/
+temp/
+.cache/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 数据库
+*.db
+*.sqlite
+
