@@ -30,10 +30,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       );
     }
 
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
     response.status(status).json({
       code: status,
       msg: Array.isArray(msg) ? msg[0] : msg,
       data: null,
+      ...(isDevelopment && exception instanceof Error ? { stack: exception.stack } : {}),
     });
   }
 }

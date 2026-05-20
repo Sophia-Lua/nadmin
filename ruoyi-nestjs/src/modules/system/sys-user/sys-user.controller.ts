@@ -17,6 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { RequiresPermissions } from '../../../common/decorators/requires-permissions.decorator';
 import { SysUserService } from './sys-user.service';
 import { CreateSysUserDto, UpdateSysUserDto, ResetPasswordDto, AuthRoleDto, CheckUniqueDto } from './dto/sys-user.dto';
 
@@ -35,6 +36,7 @@ export class SysUserController {
 
   @Get('list')
   @ApiOperation({ summary: '用户列表' })
+  @RequiresPermissions('system:user:list')
   listGet(@Query() query: any) {
     const page = query.pageNum ? parseInt(query.pageNum, 10) : 1;
     const size = query.pageSize ? parseInt(query.pageSize, 10) : 10;
@@ -43,6 +45,7 @@ export class SysUserController {
 
   @Post('list')
   @ApiOperation({ summary: '用户列表查询' })
+  @RequiresPermissions('system:user:list')
   list(@Query() query: any) {
     const page = query.pageNum ? parseInt(query.pageNum, 10) : 1;
     const size = query.pageSize ? parseInt(query.pageSize, 10) : 10;
@@ -99,31 +102,38 @@ export class SysUserController {
 
   @Post()
   @ApiOperation({ summary: '创建用户' })
+  @RequiresPermissions('system:user:add')
   create(@Body() dto: CreateSysUserDto) {
     return this.sysUserService.create(dto);
   }
 
   @Put()
   @ApiOperation({ summary: '修改用户' })
+  @RequiresPermissions('system:user:edit')
   update(@Body() dto: UpdateSysUserDto) {
     return this.sysUserService.update(dto);
   }
 
   @Delete(':userIds')
   @ApiOperation({ summary: '删除用户' })
+  @RequiresPermissions('system:user:remove')
   remove(@Param('userIds') userIds: string) {
     return this.sysUserService.remove(userIds);
   }
 
   @Post('export')
   @ApiOperation({ summary: '用户导出' })
+  @RequiresPermissions('system:user:export')
   export(@Body() dto: any, @Res({ passthrough: true }) res: Response) {
     return this.sysUserService.export(dto, res);
   }
 
   @Post('importData')
   @ApiOperation({ summary: '用户导入' })
-  @UseInterceptors(FileInterceptor('file'))
+  @RequiresPermissions('system:user:import')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: 10 * 1024 * 1024 },
+  }))
   importData(@UploadedFile() file: any, @Body() body: any) {
     return this.sysUserService.importData(file, body);
   }

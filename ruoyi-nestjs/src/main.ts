@@ -14,7 +14,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const prefix = configService.get<string>('API_PREFIX') || '/prod-api';
   const port = configService.get<number>('PORT') || 3000;
-  const swaggerEnabled = configService.get<boolean>('SWAGGER_ENABLED') || true;
+  const swaggerEnabled = configService.get<boolean>('SWAGGER_ENABLED') || false;
+  const corsOrigins = configService.get<string>('CORS_ORIGINS') || 'http://localhost:80';
 
   app.setGlobalPrefix(prefix);
 
@@ -34,11 +35,12 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   app.enableCors({
-    origin: true,
+    origin: corsOrigins.split(',').map((o) => o.trim()),
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   });
 
-  if (swaggerEnabled) {
+  if (swaggerEnabled && process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('RuoYi NestJS API')
       .setDescription('RuoYi 后台管理系统 API 文档 - 基于 NestJS + TypeScript 实现')
@@ -59,7 +61,9 @@ async function bootstrap() {
 
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger documentation: http://localhost:${port}/swagger`);
+  if (swaggerEnabled && process.env.NODE_ENV !== 'production') {
+    console.log(`Swagger documentation: http://localhost:${port}/swagger`);
+  }
 }
 
 bootstrap();

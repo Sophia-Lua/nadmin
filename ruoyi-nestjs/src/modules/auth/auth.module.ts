@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, InternalServerErrorException } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -14,12 +14,20 @@ import { JwtStrategy } from '@/common/strategies/jwt.strategy';
   imports: [
     JwtModule.registerAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'default-secret',
-        signOptions: {
-          expiresIn: configService.get<number>('JWT_EXPIRES_IN') || 7200,
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret || secret === 'default-secret') {
+          throw new InternalServerErrorException(
+            'JWT_SECRET environment variable is not configured properly',
+          );
+        }
+        return {
+          secret,
+          signOptions: {
+            expiresIn: configService.get<number>('JWT_EXPIRES_IN') || 7200,
+          },
+        };
+      },
     }),
     TypeOrmModule.forFeature([SysUser, SysRole, SysMenu]),
   ],

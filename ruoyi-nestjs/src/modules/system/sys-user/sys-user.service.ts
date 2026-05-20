@@ -9,6 +9,7 @@ import { SysDept } from '../../../entities/sys-dept.entity';
 import { CreateSysUserDto, UpdateSysUserDto, ResetPasswordDto, AuthRoleDto, CheckUniqueDto } from './dto/sys-user.dto';
 import * as bcrypt from 'bcrypt';
 import * as Excel from 'exceljs';
+import { RandomUtil } from '../../../common/utils/random.util';
 
 @Injectable()
 export class SysUserService {
@@ -33,6 +34,7 @@ export class SysUserService {
       where,
       skip: (pageNum - 1) * pageSize,
       take: pageSize,
+      select: ['userId', 'loginName', 'userName', 'deptId', 'email', 'phonenumber', 'sex', 'status', 'createTime', 'updateTime'],
       relations: ['dept'],
     });
 
@@ -208,6 +210,7 @@ export class SysUserService {
           continue;
         }
 
+        const tempPassword = RandomUtil.randomPassword(12);
         const user = this.sysUserRepo.create({
           loginName,
           userName: String(row.userName || ''),
@@ -216,7 +219,7 @@ export class SysUserService {
           phonenumber: String(row.phonenumber || ''),
           sex: row.sex === '男' ? '0' : row.sex === '女' ? '1' : '0',
           status: row.status === '正常' ? '0' : '1',
-          password: await bcrypt.hash('123456', 12),
+          password: await bcrypt.hash(tempPassword, 12),
           salt: '',
           delFlag: '0',
           userType: '00',
