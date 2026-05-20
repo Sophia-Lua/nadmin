@@ -53,7 +53,7 @@ export class AuthService {
     const expiresIn = this.configService.get<number>('JWT_EXPIRES_IN') || 7200;
 
     return {
-      token: this.jwtService.sign(payload),
+      token: this.jwtService.sign(payload, { expiresIn }),
       expiresIn,
       user: {
         userId: user.userId,
