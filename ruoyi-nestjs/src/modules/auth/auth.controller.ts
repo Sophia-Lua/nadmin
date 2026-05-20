@@ -34,7 +34,7 @@ export class AuthController {
   @ApiOperation({ summary: '获取验证码图片' })
   @ApiOkResponse({ type: CaptchaVo })
   async getCaptcha(): Promise<RuoYiResponse<CaptchaVo>> {
-    const captcha = this.captchaService.generateCaptcha();
+    const captcha = await this.captchaService.generateCaptcha();
     return {
       code: 200,
       msg: '操作成功',

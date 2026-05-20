@@ -1,14 +1,14 @@
 import { Controller, Get, Delete, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
-import { CacheService } from './cache.service';
+import { MonitorCacheService } from './monitor-cache.service';
 
 @ApiTags('系统监控 / 缓存监控')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('monitor/cache')
-export class CacheController {
-  constructor(private readonly cacheService: CacheService) {}
+export class MonitorCacheController {
+  constructor(private readonly cacheService: MonitorCacheService) {}
 
   @Get()
   @ApiOperation({ summary: '缓存信息' })

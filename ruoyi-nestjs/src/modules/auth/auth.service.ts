@@ -1,8 +1,10 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { SysUser } from '@/entities/sys-user.entity';
 import { BcryptUtil } from '@/common/utils/bcrypt.util';
 import { RandomUtil } from '@/common/utils/random.util';
@@ -15,6 +17,7 @@ export class AuthService {
     private userRepository: Repository<SysUser>,
     private jwtService: JwtService,
     private configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async validateUser(loginDto: LoginDto): Promise<SysUser> {
@@ -43,11 +46,16 @@ export class AuthService {
   }
 
   async login(user: SysUser) {
+    const [permissions, roles] = await Promise.all([
+      this.getUserPermissions(user.userId),
+      this.getUserRoles(user.userId),
+    ]);
+
     const payload = {
       sub: user.userId,
       loginName: user.loginName,
-      permissions: await this.getUserPermissions(user.userId),
-      roles: await this.getUserRoles(user.userId),
+      permissions,
+      roles,
     };
 
     const expiresIn = this.configService.get<number>('JWT_EXPIRES_IN') || 7200;
@@ -65,6 +73,12 @@ export class AuthService {
   }
 
   private async getUserPermissions(userId: string): Promise<string[]> {
+    const cacheKey = `user:permissions:${userId}`;
+    const cached = await this.cacheManager.get<string[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const user = await this.userRepository.findOne({
       where: { userId },
       relations: ['roles', 'roles.menus'],
@@ -85,10 +99,18 @@ export class AuthService {
       }
     });
 
-    return Array.from(permissions);
+    const result = Array.from(permissions);
+    await this.cacheManager.set(cacheKey, result, 3600);
+    return result;
   }
 
   private async getUserRoles(userId: string): Promise<string[]> {
+    const cacheKey = `user:roles:${userId}`;
+    const cached = await this.cacheManager.get<string[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const user = await this.userRepository.findOne({
       where: { userId },
       relations: ['roles'],
@@ -98,12 +120,21 @@ export class AuthService {
       return [];
     }
 
-    return user.roles
+    const result = user.roles
       .filter((role) => role.status === '0')
       .map((role) => role.roleKey);
+    await this.cacheManager.set(cacheKey, result, 3600);
+    return result;
   }
 
   async refreshToken(user: SysUser) {
     return this.login(user);
+  }
+
+  async clearUserCache(userId: string) {
+    await Promise.all([
+      this.cacheManager.del(`user:permissions:${userId}`),
+      this.cacheManager.del(`user:roles:${userId}`),
+    ]);
   }
 }

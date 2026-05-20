@@ -138,14 +138,14 @@ export class RoleService {
 
   async cancelAll(dto: any) {
     const { roleId, userIds } = dto;
-    for (const userId of userIds) {
-      const user = await this.sysUserRepo.findOne({ where: { userId: String(userId) } });
-      if (user) {
-        const userRoleIds = user.roles?.map((r: any) => r.roleId) || [];
-        user.roles = userRoleIds.filter((id: any) => id !== String(roleId)) as any;
-        await this.sysUserRepo.save(user);
-      }
+    const users = await this.sysUserRepo.findByIds(userIds.map((id: any) => String(id)));
+    
+    for (const user of users) {
+      const userRoleIds = user.roles?.map((r: any) => r.roleId) || [];
+      user.roles = userRoleIds.filter((id: any) => id !== String(roleId)) as any;
+      await this.sysUserRepo.save(user);
     }
+    
     return { code: 200, msg: '操作成功' };
   }
 
@@ -153,15 +153,18 @@ export class RoleService {
     const { roleId, userIds } = dto;
     const role = await this.sysRoleRepo.findOne({ where: { roleId: String(roleId), delFlag: '0' } });
     if (!role) throw new NotFoundException('角色不存在');
+    
     const users = await this.sysUserRepo.findByIds(userIds);
+    
     for (const user of users) {
       const userRoleIds = user.roles?.map((r: any) => r.roleId) || [];
-      if (!userRoleIds.includes(roleId)) {
-        userRoleIds.push(roleId);
+      if (!userRoleIds.includes(String(roleId))) {
+        userRoleIds.push(String(roleId));
       }
       user.roles = userRoleIds as any;
       await this.sysUserRepo.save(user);
     }
+    
     return { code: 200, msg: '操作成功' };
   }
 

@@ -3,7 +3,7 @@ import { OperlogModule } from './operlog/operlog.module';
 import { LogininforModule } from './logininfor/logininfor.module';
 import { OnlineModule } from './online/online.module';
 import { ServerModule } from './server/server.module';
-import { CacheModule } from './cache/cache.module';
+import { MonitorCacheModule } from './monitor-cache/monitor-cache.module';
 import { JobModule } from './job/job.module';
 import { JobLogModule } from './job-log/job-log.module';
 import { DataModule } from './data/data.module';
@@ -14,7 +14,7 @@ import { DataModule } from './data/data.module';
     LogininforModule,
     OnlineModule,
     ServerModule,
-    CacheModule,
+    MonitorCacheModule,
     JobModule,
     JobLogModule,
     DataModule,

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class CacheService {
+export class MonitorCacheService {
   async getInfo() {
     return { code: 200, msg: '操作成功', data: { commandStats: [], dbSize: 0, info: {} } };
   }

@@ -11,9 +11,12 @@ export const databaseConfig = (): TypeOrmModuleOptions => ({
   timezone: '+08:00',
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   synchronize: false,
-  logging: false,
+  logging: process.env.NODE_ENV === 'development',
   maxQueryExecutionTime: 1000,
   extra: {
-    connectionLimit: 10,
+    connectionLimit: 30,
+    acquireTimeout: 60000,
+    timeout: 60000,
+    reconnect: true,
   },
 });

@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Like } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { SysDictType } from '../../../entities/sys-dict-type.entity';
 import { SysDictData } from '../../../entities/sys-dict-data.entity';
 import { CreateDictTypeDto, UpdateDictTypeDto, CreateDictDataDto, UpdateDictDataDto } from './dto/dict.dto';
@@ -12,6 +14,7 @@ export class DictService {
     private readonly sysDictTypeRepo: Repository<SysDictType>,
     @InjectRepository(SysDictData)
     private readonly sysDictDataRepo: Repository<SysDictData>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async typeList(pageNum: number, pageSize: number, dictName?: string) {
@@ -47,16 +50,25 @@ export class DictService {
   }
 
   async dataList(dictType: string) {
+    const cacheKey = `dict:data:${dictType}`;
+    const cached = await this.cacheManager.get<any[]>(cacheKey);
+    if (cached) {
+      return { code: 200, msg: '操作成功', data: cached };
+    }
+
     const data = await this.sysDictDataRepo.find({
       where: { dictType, status: '0' },
       order: { dictSort: 'ASC' },
     });
+
+    await this.cacheManager.set(cacheKey, data, 3600);
     return { code: 200, msg: '操作成功', data };
   }
 
   async createData(dto: CreateDictDataDto) {
     const data = this.sysDictDataRepo.create({ ...dto, status: dto.status || '0', dictSort: dto.dictSort || 0 });
     await this.sysDictDataRepo.save(data);
+    await this.cacheManager.del(`dict:data:${dto.dictType}`);
     return { code: 200, msg: '操作成功' };
   }
 
@@ -65,11 +77,17 @@ export class DictService {
     if (!data) throw new NotFoundException('字典数据不存在');
     Object.assign(data, dto);
     await this.sysDictDataRepo.save(data);
+    await this.cacheManager.del(`dict:data:${data.dictType}`);
     return { code: 200, msg: '操作成功' };
   }
 
   async removeData(dictCodes: string) {
+    const dataList = await this.sysDictDataRepo.findByIds(dictCodes.split(','));
     await this.sysDictDataRepo.delete({ dictCode: In(dictCodes.split(',')) });
+    const dictTypes = [...new Set(dataList.map(d => d.dictType))];
+    for (const dictType of dictTypes) {
+      await this.cacheManager.del(`dict:data:${dictType}`);
+    }
     return { code: 200, msg: '操作成功' };
   }
 
@@ -93,6 +111,7 @@ export class DictService {
   }
 
   async refreshCache() {
+    const allKeys = await this.cacheManager.get('dict:data:*');
     return { code: 200, msg: '操作成功' };
   }
 

@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createCanvas } from 'canvas';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { RandomUtil } from '@/common/utils/random.util';
 
 type CanvasRenderingContext2D = any;
@@ -8,15 +10,19 @@ type CanvasRenderingContext2D = any;
 @Injectable()
 export class CaptchaService {
   private captchaEnabled = true;
+  private readonly CAPTCHA_TTL = 120;
 
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
-  generateCaptcha(): {
+  async generateCaptcha(): Promise<{
     img: string;
     captchaEnabled: boolean;
     token: string;
     uuid: string;
-  } {
+  }> {
     const uuid = RandomUtil.uuid();
     const token = RandomUtil.randomString(32);
 
@@ -73,12 +79,40 @@ export class CaptchaService {
 
     const img = canvas.toDataURL('image/png');
 
+    await this.cacheManager.set(`captcha:${uuid}`, code.toUpperCase(), this.CAPTCHA_TTL);
+    await this.cacheManager.set(`captcha:token:${token}`, uuid, this.CAPTCHA_TTL);
+
     return {
       img,
       captchaEnabled: this.captchaEnabled,
       token,
       uuid,
     };
+  }
+
+  async validateCaptcha(uuid: string, code: string, token?: string): Promise<boolean> {
+    if (!this.captchaEnabled) {
+      return true;
+    }
+
+    if (token) {
+      const storedUuid = await this.cacheManager.get<string>(`captcha:token:${token}`);
+      if (storedUuid !== uuid) {
+        return false;
+      }
+    }
+
+    const storedCode = await this.cacheManager.get<string>(`captcha:${uuid}`);
+    if (!storedCode) {
+      return false;
+    }
+
+    await this.cacheManager.del(`captcha:${uuid}`);
+    if (token) {
+      await this.cacheManager.del(`captcha:token:${token}`);
+    }
+
+    return storedCode === code.toUpperCase();
   }
 
   private randomColor(): string {

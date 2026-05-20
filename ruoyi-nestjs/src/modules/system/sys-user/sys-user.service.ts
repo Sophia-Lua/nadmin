@@ -53,7 +53,7 @@ export class SysUserService {
   }
 
   async create(dto: CreateSysUserDto) {
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const hashedPassword = await bcrypt.hash(dto.password, 12);
     
     const user = this.sysUserRepo.create({
       ...dto,
@@ -79,7 +79,7 @@ export class SysUserService {
     }
 
     if (dto.password) {
-      dto.password = await bcrypt.hash(dto.password, 10);
+      dto.password = await bcrypt.hash(dto.password, 12);
     }
 
     Object.assign(user, dto);
@@ -117,10 +117,19 @@ export class SysUserService {
     return { code: 200, msg: '操作成功', data: { posts } };
   }
 
+  async roleAndPostList() {
+    const [roles, posts] = await Promise.all([
+      this.sysRoleRepo.find({ where: { delFlag: '0', status: '0' } }),
+      this.sysPostRepo.find({ where: { status: '0' } }),
+    ]);
+    return { code: 200, msg: '操作成功', data: { roles, posts } };
+  }
+
   async export(dto: any, res: Response) {
     const users = await this.sysUserRepo.find({
       where: { delFlag: '0' },
-      relations: ['dept', 'roles', 'posts'],
+      select: ['userId', 'loginName', 'userName', 'deptId', 'email', 'phonenumber', 'sex', 'status', 'createTime'],
+      relations: ['dept'],
     });
 
     const workbook = new Excel.Workbook();
@@ -207,7 +216,7 @@ export class SysUserService {
           phonenumber: String(row.phonenumber || ''),
           sex: row.sex === '男' ? '0' : row.sex === '女' ? '1' : '0',
           status: row.status === '正常' ? '0' : '1',
-          password: await bcrypt.hash('123456', 10),
+          password: await bcrypt.hash('123456', 12),
           salt: '',
           delFlag: '0',
           userType: '00',
@@ -268,7 +277,7 @@ export class SysUserService {
       throw new NotFoundException('用户不存在');
     }
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const hashedPassword = await bcrypt.hash(dto.password, 12);
     await this.sysUserRepo.update(
       { userId: dto.userId },
       { password: hashedPassword, pwdUpdateDate: new Date() },
@@ -380,20 +389,24 @@ export class SysUserService {
   }
 
   async add() {
-    const roles = await this.sysRoleRepo.find({ where: { delFlag: '0', status: '0' } });
-    const posts = await this.sysPostRepo.find({ where: { status: '0' } });
-    const depts = await this.sysDeptRepo.find({ where: { delFlag: '0' }, order: { orderNum: 'ASC' } });
+    const [roles, posts, depts] = await Promise.all([
+      this.sysRoleRepo.find({ where: { delFlag: '0', status: '0' } }),
+      this.sysPostRepo.find({ where: { status: '0' } }),
+      this.sysDeptRepo.find({ where: { delFlag: '0' }, order: { orderNum: 'ASC' } }),
+    ]);
     return { code: 200, msg: '操作成功', data: { roles, posts, depts } };
   }
 
   async edit(userId: number) {
-    const user = await this.sysUserRepo.findOne({
-      where: { userId: String(userId), delFlag: '0' },
-      relations: ['roles', 'posts', 'dept'],
-    });
-    const roles = await this.sysRoleRepo.find({ where: { delFlag: '0', status: '0' } });
-    const posts = await this.sysPostRepo.find({ where: { status: '0' } });
-    const depts = await this.sysDeptRepo.find({ where: { delFlag: '0' }, order: { orderNum: 'ASC' } });
+    const [user, roles, posts, depts] = await Promise.all([
+      this.sysUserRepo.findOne({
+        where: { userId: String(userId), delFlag: '0' },
+        relations: ['roles', 'posts', 'dept'],
+      }),
+      this.sysRoleRepo.find({ where: { delFlag: '0', status: '0' } }),
+      this.sysPostRepo.find({ where: { status: '0' } }),
+      this.sysDeptRepo.find({ where: { delFlag: '0' }, order: { orderNum: 'ASC' } }),
+    ]);
     return { code: 200, msg: '操作成功', data: { user, roles, posts, depts } };
   }
 

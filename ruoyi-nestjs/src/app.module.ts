@@ -3,6 +3,7 @@ import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CacheModule } from './common/cache/cache.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
@@ -18,7 +19,7 @@ import { OperlogModule } from './modules/monitor/operlog/operlog.module';
 import { LogininforModule } from './modules/monitor/logininfor/logininfor.module';
 import { OnlineModule } from './modules/monitor/online/online.module';
 import { ServerModule } from './modules/monitor/server/server.module';
-import { CacheModule } from './modules/monitor/cache/cache.module';
+import { MonitorCacheModule } from './modules/monitor/monitor-cache/monitor-cache.module';
 import { JobModule } from './modules/monitor/job/job.module';
 import { JobLogModule } from './modules/monitor/job-log/job-log.module';
 import { DataModule } from './modules/monitor/data/data.module';
@@ -32,6 +33,7 @@ import { databaseConfig } from './config/database.config';
 
 @Module({
   imports: [
+    CacheModule,
     NestConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

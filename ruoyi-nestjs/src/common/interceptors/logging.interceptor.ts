@@ -6,6 +6,21 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import * as winston from 'winston';
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
+    }),
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'logs/requests.log' }),
+  ],
+});
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -20,7 +35,7 @@ export class LoggingInterceptor implements NestInterceptor {
       .pipe(
         tap(() => {
           const costTime = Date.now() - now;
-          console.log(`[HTTP] ${method} ${url} - ${costTime}ms`);
+          logger.info(`${method} ${url} - ${costTime}ms`);
         }),
       );
   }
