@@ -22,16 +22,16 @@ export class OperlogController {
     return this.operlogService.detail(Number(infoId));
   }
 
-  @Delete(':infoIds')
-  @ApiOperation({ summary: '删除操作日志' })
-  remove(@Param('infoIds') infoIds: string) {
-    return this.operlogService.remove(infoIds);
-  }
-
   @Delete('clean')
   @ApiOperation({ summary: '清空操作日志' })
   clean() {
     return this.operlogService.clean();
+  }
+
+  @Delete(':infoIds')
+  @ApiOperation({ summary: '删除操作日志' })
+  remove(@Param('infoIds') infoIds: string) {
+    return this.operlogService.remove(infoIds);
   }
 
   @Post('export')

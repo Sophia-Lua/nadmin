@@ -7,6 +7,21 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('system')
 export class HomeController {
+  @Get('home')
+  @ApiOperation({ summary: '系统首页数据' })
+  home() {
+    return {
+      code: 200,
+      msg: '操作成功',
+      data: {
+        visitCount: 1234,
+        userCount: 56,
+        roleCount: 8,
+        postCount: 12,
+      },
+    };
+  }
+
   @Get('index')
   @ApiOperation({ summary: '系统首页' })
   index() {

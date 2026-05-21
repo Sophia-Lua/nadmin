@@ -7,6 +7,12 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('tool/build')
 export class BuildController {
+  @Get('list')
+  @ApiOperation({ summary: '表单构建列表' })
+  list() {
+    return { code: 200, msg: '操作成功', data: { msg: '表单构建功能' } };
+  }
+
   @Get()
   @ApiOperation({ summary: '表单构建页面' })
   build() {

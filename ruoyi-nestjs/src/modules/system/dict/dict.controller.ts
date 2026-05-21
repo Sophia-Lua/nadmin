@@ -11,6 +11,12 @@ import { CreateDictTypeDto, UpdateDictTypeDto, CreateDictDataDto, UpdateDictData
 export class DictController {
   constructor(private readonly dictService: DictService) {}
 
+  @Get('list')
+  @ApiOperation({ summary: '字典列表' })
+  list() {
+    return this.dictService.typeList(1, 10, '');
+  }
+
   @Get('type/list')
   @ApiOperation({ summary: '字典类型列表' })
   typeList(@Query('pageNum') pageNum: number, @Query('pageSize') pageSize: number, @Query('dictName') dictName?: string) {

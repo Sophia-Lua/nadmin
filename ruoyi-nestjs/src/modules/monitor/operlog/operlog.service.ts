@@ -24,7 +24,7 @@ export class OperlogService {
   }
 
   async detail(infoId: number) {
-    const operlog = await this.operLogRepo.findOne({ where: { infoId: String(infoId) } as any });
+    const operlog = await this.operLogRepo.findOne({ where: { operId: String(infoId) } as any });
     if (!operlog) throw new NotFoundException('日志不存在');
     return { code: 200, msg: '操作成功', data: operlog };
   }

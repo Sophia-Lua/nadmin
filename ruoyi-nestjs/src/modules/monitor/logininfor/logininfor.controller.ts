@@ -22,16 +22,16 @@ export class LogininforController {
     return this.logininforService.detail(Number(infoId));
   }
 
-  @Delete(':infoIds')
-  @ApiOperation({ summary: '删除登录日志' })
-  remove(@Param('infoIds') infoIds: string) {
-    return this.logininforService.remove(infoIds);
-  }
-
   @Delete('clean')
   @ApiOperation({ summary: '清空登录日志' })
   clean() {
     return this.logininforService.clean();
+  }
+
+  @Delete(':infoIds')
+  @ApiOperation({ summary: '删除登录日志' })
+  remove(@Param('infoIds') infoIds: string) {
+    return this.logininforService.remove(infoIds);
   }
 
   @Get('unlock/:loginName')
