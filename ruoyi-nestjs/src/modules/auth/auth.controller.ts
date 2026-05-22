@@ -80,14 +80,14 @@ export class AuthController {
   @Get('register')
   @ApiOperation({ summary: '注册页面' })
   registerPage() {
-    return { code: 500, msg: '系统不支持自助注册，请联系管理员创建账号' };
+    return { code: 200, msg: '系统不支持自助注册，请联系管理员创建账号' };
   }
 
   @Post('register')
   @ApiOperation({ summary: '用户注册' })
   @ApiBody({ type: LoginDto })
   async register(@Body() dto: any): Promise<RuoYiResponse<void>> {
-    return { code: 500, msg: '系统不支持自助注册，请联系管理员创建账号' };
+    return { code: 200, msg: '系统不支持自助注册，请联系管理员创建账号' };
   }
 
   @Get('unauth')

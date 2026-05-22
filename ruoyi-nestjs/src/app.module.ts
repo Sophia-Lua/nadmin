@@ -62,6 +62,7 @@ import { databaseConfig } from './config/database.config';
     LogininforModule,
     OnlineModule,
     ServerModule,
+    MonitorCacheModule,
     CacheModule,
     JobModule,
     JobLogModule,

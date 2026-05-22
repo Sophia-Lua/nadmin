@@ -267,7 +267,7 @@ export class SysUserService {
     worksheet.getRow(1).font = { bold: true };
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="用户模板.xlsx"');
+    res.setHeader('Content-Disposition', 'attachment; filename="user_template.xlsx"');
     await workbook.xlsx.write(res);
   }
 
@@ -353,24 +353,27 @@ export class SysUserService {
   }
 
   async checkLoginNameUnique(dto: CheckUniqueDto) {
+    const loginName = dto.loginName ?? dto.value;
     const user = await this.sysUserRepo.findOne({
-      where: { loginName: dto.value, delFlag: '0' },
+      where: { loginName, delFlag: '0' },
     });
 
     return { code: 200, msg: '操作成功', data: user ? { hasUser: true } : { hasUser: false } };
   }
 
   async checkPhoneUnique(dto: CheckUniqueDto) {
+    const phonenumber = dto.phonenumber ?? dto.value;
     const user = await this.sysUserRepo.findOne({
-      where: { phonenumber: dto.value, delFlag: '0' },
+      where: { phonenumber, delFlag: '0' },
     });
 
     return { code: 200, msg: '操作成功', data: user ? { hasUser: true } : { hasUser: false } };
   }
 
   async checkEmailUnique(dto: CheckUniqueDto) {
+    const email = dto.email ?? dto.value;
     const user = await this.sysUserRepo.findOne({
-      where: { email: dto.value, delFlag: '0' },
+      where: { email, delFlag: '0' },
     });
 
     return { code: 200, msg: '操作成功', data: user ? { hasUser: true } : { hasUser: false } };

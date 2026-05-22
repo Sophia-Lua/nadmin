@@ -18,6 +18,7 @@ import type { Response } from 'express';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RequiresPermissions } from '../../../common/decorators/requires-permissions.decorator';
+import { SkipTransform } from '../../../common/decorators/skip-transform.decorator';
 import { SysUserService } from './sys-user.service';
 import { CreateSysUserDto, UpdateSysUserDto, ResetPasswordDto, AuthRoleDto, CheckUniqueDto } from './dto/sys-user.dto';
 
@@ -72,6 +73,7 @@ export class SysUserController {
 
   @Get('importTemplate')
   @ApiOperation({ summary: '下载导入模板' })
+  @SkipTransform()
   importTemplate(@Res({ passthrough: true }) res: Response) {
     return this.sysUserService.importTemplate(res);
   }

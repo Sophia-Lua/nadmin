@@ -164,8 +164,23 @@ export class AuthRoleDto {
 }
 
 export class CheckUniqueDto {
-  @ApiProperty({ description: '用户名/手机号/邮箱' })
+  @ApiProperty({ description: '用户名/手机号/邮箱', required: false })
   @IsString()
-  @IsNotEmpty()
-  value: string;
+  @IsOptional()
+  value?: string;
+
+  @ApiProperty({ description: '登录用户名', required: false })
+  @IsString()
+  @IsOptional()
+  loginName?: string;
+
+  @ApiProperty({ description: '手机号', required: false })
+  @IsString()
+  @IsOptional()
+  phonenumber?: string;
+
+  @ApiProperty({ description: '邮箱', required: false })
+  @IsString()
+  @IsOptional()
+  email?: string;
 }
