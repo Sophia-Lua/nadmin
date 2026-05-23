@@ -17,7 +17,6 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as multer from 'multer';
 
 @ApiTags('公共接口')
 @Controller('common')
